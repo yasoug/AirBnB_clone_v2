@@ -1,47 +1,52 @@
 # Set up web servers for the deployment of web_static using Puppet
 
-exec { 'update':
-  command => 'apt-get update',
-  provider => shell,
+exec {'apt-update':
+  command => '/usr/bin/apt-get -y update',
+  refreshonly => true,
 }
 
--> exec { 'install':
-  command => 'apt-get -y install nginx',
-  provider => shell,
+package {'nginx':
+  ensure => 'present',
 }
 
--> exec { 'create_shared':
-  command => 'mkdir -p /data/web_static/shared/',
-  provider => shell,
+file {'/data':
+  ensure => 'directory',
 }
 
--> exec { 'create_test':
-  command => 'mkdir -p /data/web_static/releases/test/',
-  provider => shell,
+file {'/data/web_static':
+  ensure => 'directory',
 }
 
-}
--> exec { 'Madara':
-  command => 'echo "Wake up to Reality" > /data/web_static/releases/test/index.html',
-  provider => shell,
+file {'/data/web_static/releases':
+  ensure => 'directory',
 }
 
--> exec { 'simlink':
-  command => 'ln -sfn /data/web_static/releases/test /data/web_static/current',
-  provider => shell,
+file {'/data/web_static/releases/test':
+  ensure => 'directory',
 }
 
--> exec { 'permission':
-  command => 'chown -R ubuntu:ubuntu /data/',
-  provider => shell,
+file {'/data/web_static/shared':
+  ensure => 'directory',
 }
 
--> exec { 'changes':
-  command => 'sudo sed -i "s|server_name _;|server_name _;\n\n\tlocation /hbnb_static {\n\t\talias /data/web_static/current/;\n\t}|" /etc/nginx/sites-enabled/default',
-  provider => shell,
+file {'/data/web_static/releases/test/index.html':
+  ensure  => 'present',
+  content => "Wake up to Reality"
 }
 
--> exec { 'restart':
-  command => 'sudo service nginx restart',
-  provider => shell,
+file {'/data/web_static/current':
+  ensure => 'link',
+  target => '/data/web_static/releases/test',
+}
+
+exec {'chown -R ubuntu:ubuntu /data/':
+  path => '/usr/bin/:/usr/local/bin/:/bin/',
+}
+
+file {'/etc/nginx/sites-available/default':
+  ensure  => 'present',
+}
+
+service {'nginx':
+  ensure => 'running',
 }
