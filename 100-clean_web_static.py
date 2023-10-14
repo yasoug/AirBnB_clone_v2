@@ -7,7 +7,7 @@ from time import strftime
 from os.path import isfile
 import os
 
-env.hosts = ['34.229.67.35', '34.207.121.74']
+env.hosts = ['35.153.18.120', '34.203.77.73']
 env.user = 'ubuntu'
 env.key_filename = '~/.ssh/school'
 
